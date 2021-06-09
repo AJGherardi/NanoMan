@@ -21,6 +21,9 @@ void setup()
   Wire.begin();
   xl.setI2CAddr(0x19);
   xl.begin(LIS331::USE_I2C);
+  xl.setPowerMode(LIS331::NORMAL);
+  xl.setFullScale(LIS331::MED_RANGE);
+  xl.setODR(LIS331::DR_100HZ);
   // TODO: Initialize SD card
   Serial.begin(38400);
   // Open file
