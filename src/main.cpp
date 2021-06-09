@@ -2,6 +2,9 @@
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
+#include "SparkFun_LIS331.h"
+
+LIS331 xl;
 
 const int sdCS = 10; // TODO: Set CS pin for SD card
 
@@ -14,7 +17,10 @@ const char filename[] = "datalog.txt";
 
 void setup()
 {
-  // TODO: Initialize sensor
+  // Initialize sensor
+  Wire.begin();
+  xl.setI2CAddr(0x19);
+  xl.begin(LIS331::USE_I2C);
   // TODO: Initialize SD card
   Serial.begin(38400);
   // Open file
@@ -41,16 +47,18 @@ void loop()
   if (timeElapsed >= 10000)
   {
     // Record value
-    int16_t value = 32767; // TODO: Get value from sensor
+    int16_t x, y,z ; 
+    xl.readAxes(x, y, z);
+    float xG = xl.convertToG(200, x);
     // Add to buffer
-    dataBuffer += value;
+    dataBuffer += xG;
     dataBuffer += ",";
     dataBuffer += timeElapsed;
-    dataBuffer += "\n"; // This creates a new line 
+    dataBuffer += "\n"; // This creates a new line
     // Mark sample time
     previousTime = now;
     Serial.println(dataBuffer);
-    dataBuffer = ""; // TODO:: Remove currently being zeroed to allow prints to serial console 
+    dataBuffer = ""; // TODO:: Remove currently being zeroed to allow prints to serial console
   }
 
   // Write to file if it is available
