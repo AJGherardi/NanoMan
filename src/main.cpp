@@ -25,12 +25,10 @@ void setup()
   // xl.setPowerMode(LIS331::NORMAL);
   // xl.setFullScale(LIS331::MED_RANGE);
   // xl.setODR(LIS331::DR_100HZ);
-  // TODO: Initialize SD card
-  // Wait for SD card to be detected
-  Serial.begin(9600);
-
+  // Initialize SD card
   pinMode(sdCD, INPUT);
   pinMode(sdCS, OUTPUT);
+  // Wait for SD card to be detected
   while (!digitalRead(sdCD))
     ;
   delay(250); // 'Debounce insertion'
@@ -41,16 +39,17 @@ void setup()
       ;
   }
   // Initlize data buffer
-  dataBuffer.reserve(1024);
-  // TODO: Remove serial
+  dataBuffer.reserve(1536);
   // Open file
   dataFile = SD.open(filename, FILE_WRITE);
   if (!dataFile)
   {
-    Serial.print("Error Opening File");
+    // Serial.print("Error Opening File");
     while (1)
       ;
   }
+  // Leave a second for sd card to be ready
+  delay(1000);
   // Set initial time
   previousTime = micros();
 }
@@ -58,19 +57,17 @@ void setup()
 void loop()
 {
   // Get time
-  unsigned long now = micros();
+  unsigned long currentTime = micros();
   // Get time since last sample
   unsigned long timeElapsed = currentTime - previousTime;
   // Ensure 10 milliseconds has passed since last sample
-  if (timeElapsed >= 10000)
+  if (timeElapsed >= 12000)
   {
     // Record value
     int16_t x, y, z;
     // xl.readAxes(x, y, z);
     // float xG = xl.convertToG(200, x);
     // Add to buffer
-
-    // dataBuffer += count;
     dataBuffer += String(count, DEC);
     dataBuffer += ",";
     dataBuffer += String(timeElapsed, DEC);
@@ -87,7 +84,6 @@ void loop()
     // Write to file
     dataFile.write(dataBuffer.c_str(), chunkSize);
     dataFile.flush();
-
     // Remove data from buffer
     dataBuffer.remove(0, chunkSize);
   }
