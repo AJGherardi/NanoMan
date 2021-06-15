@@ -40,6 +40,9 @@ void setup()
   }
   // Initlize data buffer
   dataBuffer.reserve(1536);
+
+  SD.remove(filename);
+  delay(200);
   // Open file
   dataFile = SD.open(filename, FILE_WRITE);
   if (!dataFile)
@@ -70,7 +73,10 @@ void loop()
     // Add to buffer
     dataBuffer += String(count, DEC);
     dataBuffer += ",";
-    dataBuffer += String(timeElapsed, DEC);
+    dataBuffer += String(currentTime, DEC);
+    dataBuffer += ",";
+    dataBuffer += dataBuffer.length();
+    dataBuffer += ",123456789";
     dataBuffer += "\n"; // This creates a new line
     // Mark sample time
     previousTime = currentTime;
