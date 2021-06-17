@@ -3,7 +3,7 @@
 #include <SD.h>
 #include <Wire.h>
 #include "SparkFun_LIS331.h"
-//
+
 LIS331 xl;
 
 const int sdCS = 9;
@@ -14,7 +14,9 @@ unsigned long currentTime = 0;
 
 String dataBuffer = "";
 File dataFile;
-const char filename[] = "data.txt";
+const char filename[] = "ACCEL.CSV";
+
+void (*resetFunc)(void) = 0;
 
 void setup()
 {
@@ -30,24 +32,23 @@ void setup()
   pinMode(sdCS, OUTPUT);
   // Wait for SD card to be detected
   while (!digitalRead(sdCD))
-    ;
-  delay(100); // Debounce insertion
-
+  {
+    delay(12); // Debounce insertion
+    Serial.println("bounce");
+  }
+  // Init the SD card if it fails reboot.
   if (!SD.begin(sdCS))
   {
-    while (true)
-      ;
+    resetFunc();
   }
   // Initlize data buffer
   dataBuffer.reserve(1536);
-
   SD.remove(filename);
   // Open file
   dataFile = SD.open(filename, FILE_WRITE);
   if (!dataFile)
   {
-    while (1)
-      ;
+    resetFunc();
   }
   // Set initial time
   previousTime = micros();
