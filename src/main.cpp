@@ -14,7 +14,7 @@ unsigned long currentTime = 0;
 
 String dataBuffer = "";
 File dataFile;
-const char filename[] = "ACCEL.CSV";
+String filename = "";
 
 void (*resetFunc)(void) = 0;
 
@@ -34,7 +34,6 @@ void setup()
   while (!digitalRead(sdCD))
   {
     delay(12); // Debounce insertion
-    Serial.println("bounce");
   }
   // Init the SD card if it fails reboot.
   if (!SD.begin(sdCS))
@@ -43,8 +42,11 @@ void setup()
   }
   // Initlize data buffer
   dataBuffer.reserve(1536);
-  SD.remove(filename);
   // Open file
+  randomSeed(analogRead(0));
+  int randNumber = random(99999999);
+  filename += String(randNumber);
+  filename += ".txt";
   dataFile = SD.open(filename, FILE_WRITE);
   if (!dataFile)
   {
@@ -84,7 +86,16 @@ void loop()
     previousTime = currentTime;
     count++;
   }
-
+  // Check for SD card disconect
+  if (!digitalRead(sdCD))
+  {
+    dataBuffer += "bounce\n";
+    delay(12); // Debounce insertion
+    if (!digitalRead(sdCD))
+    {
+      resetFunc();
+    }
+  }
   // Write to file if it is available
   unsigned int chunkSize = dataFile.availableForWrite();
   if (chunkSize && dataBuffer.length() >= chunkSize)
