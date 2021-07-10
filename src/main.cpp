@@ -20,6 +20,7 @@ void (*resetFunc)(void) = 0;
 
 void setup()
 {
+  Serial.begin(9600);
   // Initialize sensor
   Wire.begin();
   xl.setI2CAddr(0x19);
@@ -30,6 +31,7 @@ void setup()
   // Initialize SD card
   pinMode(sdCD, INPUT);
   pinMode(sdCS, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   // Wait for SD card to be detected
   while (!digitalRead(sdCD))
   {
@@ -58,6 +60,7 @@ void setup()
 
 void loop()
 {
+  digitalWrite(LED_BUILTIN, HIGH);
   // Get time
   unsigned long currentTime = micros();
   // Get time since last sample
@@ -71,6 +74,7 @@ void loop()
     float xG = xl.convertToG(200, x);
     float yG = xl.convertToG(200, y);
     float zG = xl.convertToG(200, z);
+    Serial.println(xG);
     // Add to buffer
     dataBuffer += String(currentTime, DEC);
     dataBuffer += ",";
@@ -79,9 +83,7 @@ void loop()
     dataBuffer += String(yG, DEC);
     dataBuffer += ",";
     dataBuffer += String(zG, DEC);
-    dataBuffer += ",";
-    dataBuffer += dataBuffer.length();
-    dataBuffer += "\n"; // This creates a new line
+    dataBuffer += "\n";
     // Mark sample time
     previousTime = currentTime;
     count++;
